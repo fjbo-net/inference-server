@@ -6,6 +6,8 @@ assert on, so the Arrange block stays explicit about what matters.
 
 from typing import Any
 
+from inference_server.schemas.openai import ChatCompletionRequest
+
 DEFAULT_MODEL_ID = "qwen2.5-0.5b-instruct"
 
 
@@ -25,3 +27,9 @@ def make_chat_completion_request_payload(**overrides: Any) -> dict[str, Any]:
     }
     payload.update(overrides)
     return payload
+
+
+def make_chat_completion_request(**overrides: Any) -> ChatCompletionRequest:
+    return ChatCompletionRequest.model_validate(
+        make_chat_completion_request_payload(**overrides)
+    )
