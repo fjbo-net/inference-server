@@ -6,7 +6,7 @@ from inference_server.schemas.openai import (
 )
 
 
-def test_model_list_serialization() -> None:
+def test_model_list_serializes_to_openai_shape() -> None:
     # Arrange
     expected_payload = {
         "object": "list",
