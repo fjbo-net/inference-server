@@ -8,6 +8,8 @@ def test_health() -> None:
     # Arrange
     app = create_app()
     client = TestClient(app)
+
+    expected_status_code = 200
     
 
     # Act
@@ -15,5 +17,5 @@ def test_health() -> None:
 
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == expected_status_code
     assert response.json() == {"status": "ok", "version": __version__}
