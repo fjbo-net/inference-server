@@ -77,7 +77,7 @@ def test_get_base_dir_returns_cwd_when_not_frozen(
     assert base_dir == tmp_path
 
 
-def test_base_dir_frozen(
+def test_get_base_dir_returns_exe_parent_when_frozen(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:
