@@ -61,7 +61,7 @@ def test_settings_uses_env_values_when_variables_are_set(
     assert settings.models_dir == expected_models_dir
 
 
-def test_base_dir_unfrozen(
+def test_get_base_dir_returns_cwd_when_not_frozen(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:
