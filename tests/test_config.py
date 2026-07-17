@@ -47,7 +47,11 @@ def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 
 
 def test_base_dir_unfrozen(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Arrange
     monkeypatch.chdir(tmp_path)
+
+
+    # Assert
     assert get_base_dir() == tmp_path
 
 
