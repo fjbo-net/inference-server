@@ -10,7 +10,7 @@ from inference_server.schemas.openai import (
 )
 
 
-def test_user_message_parsing() -> None:
+def test_user_message_parses_fields_when_payload_is_valid() -> None:
     # Arrange
     expected_role = "user"
     expected_content = "Hello there!"
@@ -31,7 +31,7 @@ def test_user_message_parsing() -> None:
     assert message.name is None
 
 
-def test_assistant_message_allows_null_content() -> None:
+def test_assistant_message_parses_when_content_is_null() -> None:
     # Arrange
     payload = {
         "role": "assistant",
@@ -47,7 +47,7 @@ def test_assistant_message_allows_null_content() -> None:
     assert message.content is None
 
 
-def test_tool_message_requires_tool_call_id() -> None:
+def test_tool_message_raises_validation_error_when_tool_call_id_is_missing() -> None:
     # Arrange
     payload = {
         "role": "tool",

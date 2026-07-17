@@ -6,7 +6,7 @@ import pytest
 from inference_server.config import Settings, get_base_dir
 
 
-def test_defaults(
+def test_settings_uses_defaults_when_env_is_empty(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:
@@ -28,7 +28,7 @@ def test_defaults(
     assert settings.models_dir == expected_models_dir
 
 
-def test_env_overrides(
+def test_settings_uses_env_values_when_variables_are_set(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:
@@ -61,7 +61,7 @@ def test_env_overrides(
     assert settings.models_dir == expected_models_dir
 
 
-def test_base_dir_unfrozen(
+def test_get_base_dir_returns_cwd_when_not_frozen(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:
@@ -77,7 +77,7 @@ def test_base_dir_unfrozen(
     assert base_dir == tmp_path
 
 
-def test_base_dir_frozen(
+def test_get_base_dir_returns_exe_parent_when_frozen(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:

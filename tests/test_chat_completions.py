@@ -12,7 +12,7 @@ from inference_server.schemas.openai import (
 )
 
 
-def test_chat_completion_request_parsing() -> None:
+def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
     # Arrange
     expected_model = "qwen2.5-0.5b-instruct"
     expected_temperature = 0.7
@@ -70,7 +70,7 @@ def test_chat_completion_request_ignores_unknown_fields() -> None:
     assert not hasattr(request, "logit_bias")
 
 
-def test_chat_completion_response_serialization() -> None:
+def test_chat_completion_response_serializes_to_openai_shape() -> None:
     # Arrange
     expected_payload = {
         "id": "chatcmpl-1",
@@ -123,7 +123,7 @@ def test_chat_completion_response_serialization() -> None:
     assert payload == expected_payload
 
 
-def test_chat_completion_chunk_serialization() -> None:
+def test_chat_completion_chunk_serializes_to_openai_shape() -> None:
     # Arrange
     expected_payload = {
         "id": "chatcmpl-1",
@@ -163,7 +163,7 @@ def test_chat_completion_chunk_serialization() -> None:
     assert payload == expected_payload
 
 
-def test_chat_completion_final_chunk_carries_finish_reason() -> None:
+def test_chat_completion_chunk_carries_finish_reason_when_final() -> None:
     # Arrange
     expected_finish_reason = "stop"
 
