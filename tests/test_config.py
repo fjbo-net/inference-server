@@ -37,9 +37,18 @@ def test_env_overrides(
     expected_port = 9001
     expected_models_dir = tmp_path / "external-models"
 
-    monkeypatch.setenv("INFERENCE_HOST", expected_host)
-    monkeypatch.setenv("INFERENCE_PORT", str(expected_port))
-    monkeypatch.setenv("INFERENCE_MODELS_DIR", str(expected_models_dir))
+    monkeypatch.setenv(
+        "INFERENCE_HOST",
+        expected_host
+    )
+    monkeypatch.setenv(
+        "INFERENCE_PORT",
+        str(expected_port)
+    )
+    monkeypatch.setenv(
+        "INFERENCE_MODELS_DIR",
+        str(expected_models_dir)
+    )
 
 
     # Act
