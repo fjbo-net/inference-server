@@ -123,7 +123,7 @@ def test_chat_completion_response_serializes_to_openai_shape() -> None:
     assert payload == expected_payload
 
 
-def test_chat_completion_chunk_serialization() -> None:
+def test_chat_completion_chunk_serializes_to_openai_shape() -> None:
     # Arrange
     expected_payload = {
         "id": "chatcmpl-1",
