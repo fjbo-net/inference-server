@@ -83,8 +83,17 @@ def test_base_dir_frozen(
 ) -> None:
     # Arrange
     fake_exe = tmp_path / "dist" / "inference-server.exe"
-    monkeypatch.setattr(sys, "frozen", True, raising=False)
-    monkeypatch.setattr(sys, "executable", str(fake_exe))
+    monkeypatch.setattr(
+        sys,
+        "frozen",
+        True,
+        raising=False
+    )
+    monkeypatch.setattr(
+        sys,
+        "executable",
+        str(fake_exe)
+    )
 
 
     # Act
