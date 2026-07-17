@@ -12,7 +12,7 @@ from inference_server.schemas.openai import (
 )
 
 
-def test_chat_completion_request_parsing() -> None:
+def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
     # Arrange
     expected_model = "qwen2.5-0.5b-instruct"
     expected_temperature = 0.7
