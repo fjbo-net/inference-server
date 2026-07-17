@@ -98,3 +98,26 @@ class ChatCompletionChunk(BaseModel):
     created: int
     model: str
     choices: list[ChatCompletionChunkChoice]
+
+
+class Model(BaseModel):
+    id: str
+    object: Literal["model"] = "model"
+    created: int
+    owned_by: str
+
+
+class ModelList(BaseModel):
+    object: Literal["list"] = "list"
+    data: list[Model]
+
+
+class ErrorDetail(BaseModel):
+    message: str
+    type: str
+    param: str | None = None
+    code: str | None = None
+
+
+class ErrorResponse(BaseModel):
+    error: ErrorDetail
