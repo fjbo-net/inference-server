@@ -37,3 +37,16 @@ ChatMessage = Annotated[
     SystemMessage | UserMessage | AssistantMessage | ToolMessage,
     Field(discriminator="role")
 ]
+
+
+class ChatCompletionRequest(BaseModel):
+    model: str
+    messages: list[ChatMessage]
+    frequency_penalty: float | None = None
+    max_tokens: int | None = None
+    presence_penalty: float | None = None
+    seed: int | None = None
+    stop: str | list[str] | None = None
+    stream: bool = False
+    temperature: float | None = None
+    top_p: float | None = None
