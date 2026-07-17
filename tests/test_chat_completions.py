@@ -1,8 +1,11 @@
 from inference_server.schemas.openai import (
     AssistantMessage,
     ChatCompletionChoice,
+    ChatCompletionChunk,
+    ChatCompletionChunkChoice,
     ChatCompletionRequest,
     ChatCompletionResponse,
+    ChoiceDelta,
     SystemMessage,
     Usage,
     UserMessage,
@@ -118,3 +121,69 @@ def test_chat_completion_response_serialization() -> None:
 
     # Assert
     assert payload == expected_payload
+
+
+def test_chat_completion_chunk_serialization() -> None:
+    # Arrange
+    expected_payload = {
+        "id": "chatcmpl-1",
+        "object": "chat.completion.chunk",
+        "created": 1752710400,
+        "model": "qwen2.5-0.5b-instruct",
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": None,
+                    "content": "Hello"
+                },
+                "finish_reason": None
+            }
+        ]
+    }
+
+    delta = ChoiceDelta(content="Hello")
+    choice = ChatCompletionChunkChoice(
+        index=0,
+        delta=delta
+    )
+    chunk = ChatCompletionChunk(
+        id="chatcmpl-1",
+        created=1752710400,
+        model="qwen2.5-0.5b-instruct",
+        choices=[choice]
+    )
+
+
+    # Act
+    payload = chunk.model_dump()
+
+
+    # Assert
+    assert payload == expected_payload
+
+
+def test_chat_completion_final_chunk_carries_finish_reason() -> None:
+    # Arrange
+    expected_finish_reason = "stop"
+
+    delta = ChoiceDelta()
+    choice = ChatCompletionChunkChoice(
+        index=0,
+        delta=delta,
+        finish_reason=expected_finish_reason
+    )
+    chunk = ChatCompletionChunk(
+        id="chatcmpl-1",
+        created=1752710400,
+        model="qwen2.5-0.5b-instruct",
+        choices=[choice]
+    )
+
+
+    # Act
+    finish_reason = chunk.choices[0].finish_reason
+
+
+    # Assert
+    assert finish_reason == expected_finish_reason
