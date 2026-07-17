@@ -28,7 +28,7 @@ def test_settings_uses_defaults_when_env_is_empty(
     assert settings.models_dir == expected_models_dir
 
 
-def test_env_overrides(
+def test_settings_uses_env_values_when_variables_are_set(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:
