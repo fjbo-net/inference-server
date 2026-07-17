@@ -28,7 +28,10 @@ def test_defaults(
     assert settings.models_dir == expected_models_dir
 
 
-def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_env_overrides(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path
+) -> None:
     # Arrange
     expected_host = "0.0.0.0"
     expected_port = 9001
