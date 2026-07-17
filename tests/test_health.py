@@ -5,7 +5,14 @@ from inference_server.app import create_app
 
 
 def test_health() -> None:
+    # Arrange
     client = TestClient(create_app())
+    
+
+    # Act
     response = client.get("/health")
+
+
+    # Assert
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "version": __version__}
