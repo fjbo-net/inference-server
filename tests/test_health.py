@@ -6,7 +6,8 @@ from inference_server.app import create_app
 
 def test_health() -> None:
     # Arrange
-    client = TestClient(create_app())
+    app = create_app()
+    client = TestClient(app)
     
 
     # Act
