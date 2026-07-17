@@ -1,0 +1,36 @@
+# Virtual Environments
+.venv/
+venv/
+
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+
+# Models
+models/
+
+
+# Hardware-Compiled Cache
+*_cache/
+.cl_cache/
+
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
