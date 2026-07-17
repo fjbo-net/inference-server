@@ -28,9 +28,10 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Arrange
     expected_host = "0.0.0.0"
+    expected_port = 9001
 
     monkeypatch.setenv("INFERENCE_HOST", expected_host)
-    monkeypatch.setenv("INFERENCE_PORT", "9001")
+    monkeypatch.setenv("INFERENCE_PORT", str(expected_port))
     monkeypatch.setenv("INFERENCE_MODELS_DIR", str(tmp_path / "external-models"))
 
 
@@ -40,7 +41,7 @@ def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 
     # Assert
     assert settings.host == expected_host
-    assert settings.port == 9001
+    assert settings.port == expected_port
     assert settings.models_dir == tmp_path / "external-models"
 
 
