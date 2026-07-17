@@ -163,7 +163,7 @@ def test_chat_completion_chunk_serializes_to_openai_shape() -> None:
     assert payload == expected_payload
 
 
-def test_chat_completion_final_chunk_carries_finish_reason() -> None:
+def test_chat_completion_chunk_carries_finish_reason_when_final() -> None:
     # Arrange
     expected_finish_reason = "stop"
 
