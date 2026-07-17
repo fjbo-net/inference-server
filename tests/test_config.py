@@ -6,7 +6,10 @@ import pytest
 from inference_server.config import Settings, get_base_dir
 
 
-def test_defaults(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path
+) -> None:
     # Arrange
     monkeypatch.chdir(tmp_path)
 
