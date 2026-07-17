@@ -51,8 +51,12 @@ def test_base_dir_unfrozen(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     monkeypatch.chdir(tmp_path)
 
 
+    # Act
+    base_dir = get_base_dir()
+
+
     # Assert
-    assert get_base_dir() == tmp_path
+    assert base_dir == tmp_path
 
 
 def test_base_dir_frozen(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
