@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from inference_server.config import Settings, get_base_dir
 
@@ -59,6 +60,21 @@ def test_settings_uses_env_values_when_variables_are_set(
     assert settings.host == expected_host
     assert settings.port == expected_port
     assert settings.models_dir == expected_models_dir
+
+
+def test_settings_raises_validation_error_when_port_is_not_numeric(
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Arrange
+    monkeypatch.setenv(
+        "INFERENCE_PORT",
+        "not-a-number"
+    )
+
+
+    # Act & Assert
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)
 
 
 def test_get_base_dir_returns_cwd_when_not_frozen(
