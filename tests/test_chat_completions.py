@@ -1,6 +1,10 @@
 from inference_server.schemas.openai import (
+    AssistantMessage,
+    ChatCompletionChoice,
     ChatCompletionRequest,
+    ChatCompletionResponse,
     SystemMessage,
+    Usage,
     UserMessage,
 )
 
@@ -61,3 +65,56 @@ def test_chat_completion_request_ignores_unknown_fields() -> None:
 
     # Assert
     assert not hasattr(request, "logit_bias")
+
+
+def test_chat_completion_response_serialization() -> None:
+    # Arrange
+    expected_payload = {
+        "id": "chatcmpl-1",
+        "object": "chat.completion",
+        "created": 1752710400,
+        "model": "qwen2.5-0.5b-instruct",
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I help?",
+                    "name": None
+                },
+                "finish_reason": "stop"
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 12,
+            "completion_tokens": 7,
+            "total_tokens": 19
+        }
+    }
+
+    message = AssistantMessage(content="Hello! How can I help?")
+    choice = ChatCompletionChoice(
+        index=0,
+        message=message,
+        finish_reason="stop"
+    )
+    usage = Usage(
+        prompt_tokens=12,
+        completion_tokens=7,
+        total_tokens=19
+    )
+    response = ChatCompletionResponse(
+        id="chatcmpl-1",
+        created=1752710400,
+        model="qwen2.5-0.5b-instruct",
+        choices=[choice],
+        usage=usage
+    )
+
+
+    # Act
+    payload = response.model_dump()
+
+
+    # Assert
+    assert payload == expected_payload
