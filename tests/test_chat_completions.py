@@ -54,16 +54,7 @@ def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
 
 def test_chat_completion_request_ignores_unknown_fields() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct",
-        "messages": [
-            {
-                "role": "user",
-                "content": "Hi!"
-            }
-        ],
-        "logit_bias": {"50256": -100}
-    }
+    payload = make_chat_completion_request_payload(logit_bias={"50256": -100})
 
 
     # Act
