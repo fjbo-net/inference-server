@@ -110,3 +110,14 @@ class Model(BaseModel):
 class ModelList(BaseModel):
     object: Literal["list"] = "list"
     data: list[Model]
+
+
+class ErrorDetail(BaseModel):
+    message: str
+    type: str
+    param: str | None = None
+    code: str | None = None
+
+
+class ErrorResponse(BaseModel):
+    error: ErrorDetail
