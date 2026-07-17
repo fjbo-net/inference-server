@@ -90,15 +90,9 @@ def test_chat_completion_request_raises_validation_error_when_role_is_unknown() 
 
 def test_chat_completion_request_raises_validation_error_when_content_is_not_a_string() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct",
-        "messages": [
-            {
-                "role": "user",
-                "content": 42
-            }
-        ]
-    }
+    payload = make_chat_completion_request_payload(
+        messages=[make_user_message_payload(content=42)]
+    )
 
 
     # Act & Assert
