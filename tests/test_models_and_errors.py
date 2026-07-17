@@ -36,7 +36,7 @@ def test_model_list_serializes_to_openai_shape() -> None:
     assert payload == expected_payload
 
 
-def test_error_response_serialization() -> None:
+def test_error_response_serializes_to_openai_shape() -> None:
     # Arrange
     expected_payload = {
         "error": {
