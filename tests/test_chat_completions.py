@@ -13,6 +13,10 @@ from inference_server.schemas.openai import (
     Usage,
     UserMessage,
 )
+from tests.factories import (
+    make_chat_completion_request_payload,
+    make_user_message_payload,
+)
 
 
 def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
@@ -24,20 +28,17 @@ def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
         UserMessage
     ]
 
-    payload = {
-        "model": expected_model,
-        "messages": [
+    payload = make_chat_completion_request_payload(
+        model=expected_model,
+        messages=[
             {
                 "role": "system",
                 "content": "You are a helpful assistant."
             },
-            {
-                "role": "user",
-                "content": "Hi!"
-            }
+            make_user_message_payload()
         ],
-        "temperature": expected_temperature
-    }
+        temperature=expected_temperature
+    )
 
 
     # Act
