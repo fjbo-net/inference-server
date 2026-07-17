@@ -47,7 +47,7 @@ def test_assistant_message_parses_when_content_is_null() -> None:
     assert message.content is None
 
 
-def test_tool_message_requires_tool_call_id() -> None:
+def test_tool_message_raises_validation_error_when_tool_call_id_is_missing() -> None:
     # Arrange
     payload = {
         "role": "tool",
