@@ -10,7 +10,7 @@ from inference_server.schemas.openai import (
 )
 
 
-def test_user_message_parsing() -> None:
+def test_user_message_parses_fields_when_payload_is_valid() -> None:
     # Arrange
     expected_role = "user"
     expected_content = "Hello there!"
