@@ -29,10 +29,11 @@ def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Arrange
     expected_host = "0.0.0.0"
     expected_port = 9001
+    expected_models_dir = tmp_path / "external-models"
 
     monkeypatch.setenv("INFERENCE_HOST", expected_host)
     monkeypatch.setenv("INFERENCE_PORT", str(expected_port))
-    monkeypatch.setenv("INFERENCE_MODELS_DIR", str(tmp_path / "external-models"))
+    monkeypatch.setenv("INFERENCE_MODELS_DIR", str(expected_models_dir))
 
 
     # Act
@@ -42,7 +43,7 @@ def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Assert
     assert settings.host == expected_host
     assert settings.port == expected_port
-    assert settings.models_dir == tmp_path / "external-models"
+    assert settings.models_dir == expected_models_dir
 
 
 def test_base_dir_unfrozen(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
