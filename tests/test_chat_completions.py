@@ -70,7 +70,7 @@ def test_chat_completion_request_ignores_unknown_fields() -> None:
     assert not hasattr(request, "logit_bias")
 
 
-def test_chat_completion_response_serialization() -> None:
+def test_chat_completion_response_serializes_to_openai_shape() -> None:
     # Arrange
     expected_payload = {
         "id": "chatcmpl-1",
