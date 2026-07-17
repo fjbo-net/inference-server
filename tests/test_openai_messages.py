@@ -31,7 +31,7 @@ def test_user_message_parses_fields_when_payload_is_valid() -> None:
     assert message.name is None
 
 
-def test_assistant_message_allows_null_content() -> None:
+def test_assistant_message_parses_when_content_is_null() -> None:
     # Arrange
     payload = {
         "role": "assistant",
