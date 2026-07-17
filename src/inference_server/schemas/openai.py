@@ -37,3 +37,64 @@ ChatMessage = Annotated[
     SystemMessage | UserMessage | AssistantMessage | ToolMessage,
     Field(discriminator="role")
 ]
+
+
+class ChatCompletionRequest(BaseModel):
+    model: str
+    messages: list[ChatMessage]
+    frequency_penalty: float | None = None
+    max_tokens: int | None = None
+    presence_penalty: float | None = None
+    seed: int | None = None
+    stop: str | list[str] | None = None
+    stream: bool = False
+    temperature: float | None = None
+    top_p: float | None = None
+
+
+FinishReason = Literal[
+    "stop",
+    "length",
+    "tool_calls",
+    "content_filter"
+]
+
+
+class Usage(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+class ChatCompletionChoice(BaseModel):
+    index: int
+    message: AssistantMessage
+    finish_reason: FinishReason
+
+
+class ChatCompletionResponse(BaseModel):
+    id: str
+    object: Literal["chat.completion"] = "chat.completion"
+    created: int
+    model: str
+    choices: list[ChatCompletionChoice]
+    usage: Usage
+
+
+class ChoiceDelta(BaseModel):
+    role: Literal["assistant"] | None = None
+    content: str | None = None
+
+
+class ChatCompletionChunkChoice(BaseModel):
+    index: int
+    delta: ChoiceDelta
+    finish_reason: FinishReason | None = None
+
+
+class ChatCompletionChunk(BaseModel):
+    id: str
+    object: Literal["chat.completion.chunk"] = "chat.completion.chunk"
+    created: int
+    model: str
+    choices: list[ChatCompletionChunkChoice]
