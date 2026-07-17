@@ -4,7 +4,7 @@ from inference_server import __version__
 from inference_server.app import create_app
 
 
-def test_health() -> None:
+def test_health_returns_ok_and_version() -> None:
     # Arrange
     app = create_app()
     client = TestClient(app)
