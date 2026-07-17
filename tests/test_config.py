@@ -12,6 +12,7 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 
     expected_host = "127.0.0.1"
     expected_port = 8000
+    expected_models_dir = tmp_path / "models"
 
 
     # Act
@@ -21,7 +22,7 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Assert
     assert settings.host == expected_host
     assert settings.port == expected_port
-    assert settings.models_dir == tmp_path / "models"
+    assert settings.models_dir == expected_models_dir
 
 
 def test_env_overrides(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
