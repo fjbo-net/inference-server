@@ -52,7 +52,10 @@ def test_env_overrides(
     assert settings.models_dir == expected_models_dir
 
 
-def test_base_dir_unfrozen(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_base_dir_unfrozen(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path
+) -> None:
     # Arrange
     monkeypatch.chdir(tmp_path)
 
