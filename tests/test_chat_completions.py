@@ -78,15 +78,9 @@ def test_chat_completion_request_raises_validation_error_when_messages_are_missi
 
 def test_chat_completion_request_raises_validation_error_when_role_is_unknown() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct",
-        "messages": [
-            {
-                "role": "narrator",
-                "content": "Meanwhile, at the server..."
-            }
-        ]
-    }
+    payload = make_chat_completion_request_payload(
+        messages=[make_user_message_payload(role="narrator")]
+    )
 
 
     # Act & Assert
