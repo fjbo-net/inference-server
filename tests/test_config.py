@@ -6,7 +6,7 @@ import pytest
 from inference_server.config import Settings, get_base_dir
 
 
-def test_defaults(
+def test_settings_uses_defaults_when_env_is_empty(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
 ) -> None:
