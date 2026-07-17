@@ -66,5 +66,9 @@ def test_base_dir_frozen(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     monkeypatch.setattr(sys, "executable", str(fake_exe))
 
 
+    # Act
+    base_dir = get_base_dir()
+
+
     # Assert
-    assert get_base_dir() == fake_exe.parent
+    assert base_dir == fake_exe.parent
