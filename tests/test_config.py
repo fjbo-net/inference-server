@@ -10,13 +10,15 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Arrange
     monkeypatch.chdir(tmp_path)
 
+    expected_host = "127.0.0.1"
+
 
     # Act
     settings = Settings(_env_file=None)
 
 
     # Assert
-    assert settings.host == "127.0.0.1"
+    assert settings.host == expected_host
     assert settings.port == 8000
     assert settings.models_dir == tmp_path / "models"
 
