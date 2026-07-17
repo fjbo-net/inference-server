@@ -68,7 +68,10 @@ def test_base_dir_unfrozen(
     assert base_dir == tmp_path
 
 
-def test_base_dir_frozen(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_base_dir_frozen(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path
+) -> None:
     # Arrange
     fake_exe = tmp_path / "dist" / "inference-server.exe"
     monkeypatch.setattr(sys, "frozen", True, raising=False)
