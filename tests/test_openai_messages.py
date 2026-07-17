@@ -10,6 +10,27 @@ from inference_server.schemas.openai import (
 )
 
 
+def test_system_message_parses_fields_when_payload_is_valid() -> None:
+    # Arrange
+    expected_role = "system"
+    expected_content = "You are a helpful assistant."
+
+    payload = {
+        "role": expected_role,
+        "content": expected_content
+    }
+
+
+    # Act
+    message = SystemMessage.model_validate(payload)
+
+
+    # Assert
+    assert message.role == expected_role
+    assert message.content == expected_content
+    assert message.name is None
+
+
 def test_user_message_parses_fields_when_payload_is_valid() -> None:
     # Arrange
     expected_role = "user"
