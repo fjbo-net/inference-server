@@ -67,9 +67,8 @@ def test_chat_completion_request_ignores_unknown_fields() -> None:
 
 def test_chat_completion_request_raises_validation_error_when_messages_are_missing() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct"
-    }
+    payload = make_chat_completion_request_payload()
+    del payload["messages"]
 
 
     # Act & Assert
