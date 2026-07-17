@@ -36,6 +36,23 @@ def test_model_list_serializes_to_openai_shape() -> None:
     assert payload == expected_payload
 
 
+def test_error_detail_defaults_optional_fields_when_omitted() -> None:
+    # Arrange
+    payload = {
+        "message": "Something went wrong.",
+        "type": "server_error"
+    }
+
+
+    # Act
+    detail = ErrorDetail.model_validate(payload)
+
+
+    # Assert
+    assert detail.param is None
+    assert detail.code is None
+
+
 def test_error_response_serializes_to_openai_shape() -> None:
     # Arrange
     expected_payload = {
