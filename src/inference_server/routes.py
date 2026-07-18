@@ -7,7 +7,11 @@ from collections.abc import AsyncIterator
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from inference_server.engines.base import BaseInferenceEngine, GenerationChunk
+from inference_server.engines.base import (
+    BaseInferenceEngine,
+    EngineError,
+    GenerationChunk,
+)
 from inference_server.schemas.openai import (
     AssistantMessage,
     ChatCompletionChoice,
@@ -16,6 +20,8 @@ from inference_server.schemas.openai import (
     ChatCompletionRequest,
     ChatCompletionResponse,
     ChoiceDelta,
+    ErrorDetail,
+    ErrorResponse,
     FinishReason,
     Model,
     ModelList,
@@ -90,6 +96,10 @@ async def _build_response(
     )
 
     async for chunk in stream:
+        if chunk.error is not None:
+            # No bytes are on the wire yet, so the EngineError handler
+            # can still turn this into a proper 500 envelope.
+            raise EngineError(chunk.error)
         if chunk.token is not None:
             tokens.append(chunk.token)
         if chunk.finish_reason is not None:
@@ -144,6 +154,16 @@ async def _sse_events(
     )
 
     async for chunk in stream:
+        if chunk.error is not None:
+            error = ErrorResponse(
+                error=ErrorDetail(
+                    message=chunk.error,
+                    type="server_error",
+                    code="engine_error"
+                )
+            )
+            yield f"data: {error.model_dump_json(exclude_none=True)}\n\n"
+            break
         if chunk.token is not None:
             yield event(ChoiceDelta(content=chunk.token))
         if chunk.finish_reason is not None:
