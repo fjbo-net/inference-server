@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     port: int = 8000
     log_level: str = "info"
     engine: str = "echo"
+    device: str = "cpu"
     models_dir: Path = Field(default_factory=_default_models_dir)
 
 

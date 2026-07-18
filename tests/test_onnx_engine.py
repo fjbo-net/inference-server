@@ -33,9 +33,23 @@ def _collect_chunks(
 
 
 def _make_fake_runtime(words: list[str]) -> SimpleNamespace:
-    class FakeModel:
+    created_configs: list[Any] = []
+
+    class FakeConfig:
         def __init__(self, path: str) -> None:
             self.path = path
+            self.providers: list[str] = []
+            created_configs.append(self)
+
+        def clear_providers(self) -> None:
+            self.providers = []
+
+        def append_provider(self, provider: str) -> None:
+            self.providers.append(provider)
+
+    class FakeModel:
+        def __init__(self, source: Any) -> None:
+            self.source = source
 
     class FakeTokenizerStream:
         def decode(self, token: int) -> str:
@@ -89,17 +103,20 @@ def _make_fake_runtime(words: list[str]) -> SimpleNamespace:
             return [self._current]
 
     return SimpleNamespace(
+        Config=FakeConfig,
         Model=FakeModel,
         Tokenizer=FakeTokenizer,
         GeneratorParams=FakeGeneratorParams,
-        Generator=FakeGenerator
+        Generator=FakeGenerator,
+        created_configs=created_configs
     )
 
 
 def _make_engine(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    words: list[str]
+    words: list[str],
+    device: str = "cpu"
 ) -> OnnxEngine:
     model_dir = tmp_path / FAKE_MODEL_ID
     model_dir.mkdir(parents=True)
@@ -112,6 +129,7 @@ def _make_engine(
     settings = Settings(
         _env_file=None,
         engine="onnx",
+        device=device,
         models_dir=tmp_path
     )
     return OnnxEngine(settings)
@@ -221,6 +239,48 @@ def test_onnx_engine_reports_usage_when_generation_completes(
     assert usage.prompt_tokens == expected_prompt_tokens
     assert usage.completion_tokens == expected_completion_tokens
     assert usage.total_tokens == expected_prompt_tokens + expected_completion_tokens
+
+
+def test_onnx_engine_appends_qnn_provider_when_device_is_qnn(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Arrange
+    expected_providers = ["qnn"]
+
+    engine = _make_engine(
+        tmp_path,
+        monkeypatch,
+        words=["hi"],
+        device="qnn"
+    )
+    request = make_chat_completion_request(model=FAKE_MODEL_ID)
+
+
+    # Act
+    _collect_chunks(engine.generate(request))
+
+
+    # Assert
+    fake_runtime = sys.modules["onnxruntime_genai"]
+    assert fake_runtime.created_configs[0].providers == expected_providers
+
+
+def test_onnx_engine_raises_value_error_when_device_is_unknown(
+    tmp_path: Path
+) -> None:
+    # Arrange
+    settings = Settings(
+        _env_file=None,
+        engine="onnx",
+        device="warp-core",
+        models_dir=tmp_path
+    )
+
+
+    # Act & Assert
+    with pytest.raises(ValueError):
+        OnnxEngine(settings)
 
 
 def test_onnx_engine_raises_model_not_found_when_model_is_missing(

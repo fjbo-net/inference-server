@@ -62,12 +62,34 @@ Settings are read from environment variables (prefix `INFERENCE_`) or a `.env` f
 | `INFERENCE_HOST` | `127.0.0.1` | Bind address |
 | `INFERENCE_PORT` | `8000` | Bind port |
 | `INFERENCE_LOG_LEVEL` | `info` | Uvicorn log level |
-| `INFERENCE_ENGINE` | `echo` | Inference engine backend (`echo` for development) |
+| `INFERENCE_ENGINE` | `echo` | Inference engine backend (`echo` for development, `onnx` for ONNX Runtime GenAI) |
+| `INFERENCE_DEVICE` | `cpu` | Execution device for the `onnx` engine (`cpu`, or `qnn` for Qualcomm NPUs) |
 | `INFERENCE_MODELS_DIR` | `<base dir>/models` | Directory containing model files |
 
 The base directory is the current working directory during development. When
 running as a frozen executable, it is the directory containing the executable,
 so models and `.env` live next to the EXE rather than inside it.
+
+## ONNX engine
+The `onnx` engine serves [ONNX Runtime GenAI](https://github.com/microsoft/onnxruntime-genai)
+models — folders under `INFERENCE_MODELS_DIR` containing a `genai_config.json`
+(e.g. from [Qualcomm AI Hub](https://aihub.qualcomm.com/) or the
+[onnx-community](https://huggingface.co/onnx-community) Hugging Face models).
+
+```sh
+uv sync --group onnx    # installs onnxruntime-genai (CPU runtime included)
+INFERENCE_ENGINE=onnx uv run python -m inference_server
+```
+
+On Snapdragon (ARM64) devices, swap the bundled CPU runtime for the QNN build
+and select the NPU:
+
+```sh
+uv sync --group onnx
+uv pip uninstall onnxruntime
+uv pip install onnxruntime-qnn
+INFERENCE_ENGINE=onnx INFERENCE_DEVICE=qnn uv run python -m inference_server
+```
 
 ## Development
 ```sh
