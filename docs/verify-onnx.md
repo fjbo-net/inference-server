@@ -109,6 +109,11 @@ Task Manager should show NPU utilization during generation.
   not installed` — the `onnx` dependency group is missing.
 - `engine_error` mentioning `QNNExecutionProvider is unavailable` — the
   `onnxruntime-qnn` plugin is not installed on this device.
+- `engine_error` with `QNN execution provider is not supported in this
+  build` — the installed `onnxruntime-genai` was built without QNN (0.14
+  removed QNN packaging from the wheels). The `onnx` dependency group pins
+  `onnxruntime-genai<0.14` on ARM64 for this reason; re-run
+  `uv sync --group onnx` if the environment drifted.
 - `engine_error` with `JSON Error: model:decoder: Unknown value
   "sliding_window_key_value_cache"` — the model's `genai_config.json` uses a
   pre-mainline schema name; rename that key to `sliding_window` (same
