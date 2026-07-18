@@ -28,9 +28,29 @@ curl http://127.0.0.1:8000/v1/models
 
 ## 2. QNN pass (Snapdragon X laptop)
 
-Prerequisites: Windows on ARM64, Python 3.12 (uv installs it), a model
-compiled for the Hexagon NPU (QNN context binaries) from
-[Qualcomm AI Hub](https://aihub.qualcomm.com/) placed under `models/`.
+Prerequisites: Windows on ARM64, a **native ARM64** Python 3.12, and a model
+in ONNX Runtime GenAI format built for the Hexagon NPU — note that Qualcomm
+AI Hub LLMs target Genie, not this engine; use
+[onnx-community/Llama-3.2-3B-instruct-hexagon-npu-assets](https://huggingface.co/onnx-community/Llama-3.2-3B-instruct-hexagon-npu-assets)
+(or the `llmware` equivalent) placed under `models/`.
+
+**Check the interpreter architecture first** — uv may install an x86_64
+Python on ARM64 machines, which runs emulated and can never load `win_arm64`
+wheels or reach the NPU:
+
+```sh
+uv run python -c "import platform, sys; print(platform.machine(), sys.version)"
+```
+
+The build tag must say `(ARM64)`, not `(AMD64)` — `platform.machine()` alone
+reports the OS architecture and can say `ARM64` even under an emulated
+interpreter. If it shows `(AMD64)`:
+
+```sh
+uv python install cpython-3.12-windows-aarch64-none
+rm -rf .venv
+uv venv --python cpython-3.12-windows-aarch64-none
+```
 
 ```sh
 uv sync --group onnx    # on ARM64 this also installs the onnxruntime-qnn plugin
