@@ -104,6 +104,18 @@ class OnnxEngine(BaseInferenceEngine):
         self,
         request: ChatCompletionRequest
     ) -> AsyncIterator[GenerationChunk]:
+        try:
+            async for chunk in self._generate_chunks(request):
+                yield chunk
+        except Exception as error:
+            # A failure mid-stream must surface as a chunk: the HTTP
+            # response has already started, so raising would sever it.
+            yield GenerationChunk(error=str(error))
+
+    async def _generate_chunks(
+        self,
+        request: ChatCompletionRequest
+    ) -> AsyncIterator[GenerationChunk]:
         runtime = self._runtime_module()
         model, tokenizer = await asyncio.to_thread(
             self._load,

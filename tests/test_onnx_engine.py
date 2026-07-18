@@ -9,7 +9,6 @@ import pytest
 
 from inference_server.config import Settings
 from inference_server.engines.base import (
-    EngineError,
     GenerationChunk,
     ModelNotFoundError,
 )
@@ -32,7 +31,10 @@ def _collect_chunks(
     return asyncio.run(_consume())
 
 
-def _make_fake_runtime(words: list[str]) -> SimpleNamespace:
+def _make_fake_runtime(
+    words: list[str],
+    fail_after: int | None = None
+) -> SimpleNamespace:
     created_configs: list[Any] = []
 
     class FakeConfig:
@@ -96,6 +98,8 @@ def _make_fake_runtime(words: list[str]) -> SimpleNamespace:
             return self._next >= len(words)
 
         def generate_next_token(self) -> None:
+            if fail_after is not None and self._next >= fail_after:
+                raise RuntimeError("QNN execution failed")
             self._current = self._next
             self._next += 1
 
@@ -116,7 +120,8 @@ def _make_engine(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     words: list[str],
-    device: str = "cpu"
+    device: str = "cpu",
+    fail_after: int | None = None
 ) -> OnnxEngine:
     model_dir = tmp_path / FAKE_MODEL_ID
     model_dir.mkdir(parents=True)
@@ -124,7 +129,10 @@ def _make_engine(
     monkeypatch.setitem(
         sys.modules,
         "onnxruntime_genai",
-        _make_fake_runtime(words)
+        _make_fake_runtime(
+            words,
+            fail_after=fail_after
+        )
     )
     settings = Settings(
         _env_file=None,
@@ -301,11 +309,41 @@ def test_onnx_engine_raises_model_not_found_when_model_is_missing(
         engine.generate(request)
 
 
-def test_onnx_engine_raises_engine_error_when_runtime_is_missing(
+def test_onnx_engine_emits_error_chunk_when_generation_fails_mid_stream(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # Arrange
+    expected_token_count = 2
+    expected_error = "QNN execution failed"
+
+    engine = _make_engine(
+        tmp_path,
+        monkeypatch,
+        words=["one", "two", "three", "four"],
+        fail_after=expected_token_count
+    )
+    request = make_chat_completion_request(model=FAKE_MODEL_ID)
+
+
+    # Act
+    chunks = _collect_chunks(engine.generate(request))
+
+
+    # Assert
+    tokens = [chunk.token for chunk in chunks if chunk.token is not None]
+    assert len(tokens) == expected_token_count
+    assert chunks[-1].error == expected_error
+    assert chunks[-1].finish_reason is None
+
+
+def test_onnx_engine_emits_error_chunk_when_runtime_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Arrange
+    expected_error_fragment = "onnxruntime-genai is not installed"
+
     engine = _make_engine(
         tmp_path,
         monkeypatch,
@@ -322,6 +360,10 @@ def test_onnx_engine_raises_engine_error_when_runtime_is_missing(
     )
 
 
-    # Act & Assert
-    with pytest.raises(EngineError):
-        _collect_chunks(engine.generate(request))
+    # Act
+    chunks = _collect_chunks(engine.generate(request))
+
+
+    # Assert
+    assert chunks[-1].error is not None
+    assert expected_error_fragment in chunks[-1].error
