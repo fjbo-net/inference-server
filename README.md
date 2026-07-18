@@ -85,8 +85,7 @@ On Snapdragon (ARM64) devices, add the QNN execution provider plugin and
 select the NPU:
 
 ```sh
-uv sync --group onnx
-uv pip install onnxruntime-qnn    # plugin EP; rides alongside onnxruntime
+uv sync --group onnx    # on ARM64 this also installs the onnxruntime-qnn plugin
 INFERENCE_ENGINE=onnx INFERENCE_DEVICE=qnn uv run python -m inference_server
 ```
 

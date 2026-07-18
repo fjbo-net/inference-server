@@ -20,6 +20,7 @@ dev = [
 ]
 onnx = [
     "onnxruntime-genai>=0.14",
+    "onnxruntime-qnn>=2.0 ; platform_machine == 'ARM64'",
 ]
 
 [build-system]
