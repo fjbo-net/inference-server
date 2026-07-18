@@ -22,6 +22,10 @@ from inference_server.schemas.openai import (
 
 GENAI_CONFIG_FILENAME = "genai_config.json"
 DEFAULT_MAX_TOKENS = 1024
+SUPPORTED_DEVICES = (
+    "cpu",
+    "qnn"
+)
 
 
 def discover_models(models_dir: Path) -> list[str]:
@@ -42,7 +46,13 @@ def discover_models(models_dir: Path) -> list[str]:
 
 class OnnxEngine(BaseInferenceEngine):
     def __init__(self, settings: Settings) -> None:
+        if settings.device not in SUPPORTED_DEVICES:
+            raise ValueError(
+                f"Unknown device for the onnx engine: {settings.device!r} "
+                f"(supported: {', '.join(SUPPORTED_DEVICES)})"
+            )
         self._models_dir = settings.models_dir
+        self._device = settings.device
         self._runtime: Any | None = None
         self._loaded: dict[str, tuple[Any, Any]] = {}
 
@@ -75,7 +85,14 @@ class OnnxEngine(BaseInferenceEngine):
     def _load(self, model_id: str) -> tuple[Any, Any]:
         if model_id not in self._loaded:
             runtime = self._runtime_module()
-            model = runtime.Model(str(self._models_dir / model_id))
+            model_path = str(self._models_dir / model_id)
+            if self._device == "cpu":
+                model = runtime.Model(model_path)
+            else:
+                config = runtime.Config(model_path)
+                config.clear_providers()
+                config.append_provider(self._device)
+                model = runtime.Model(config)
             tokenizer = runtime.Tokenizer(model)
             self._loaded[model_id] = (
                 model,
