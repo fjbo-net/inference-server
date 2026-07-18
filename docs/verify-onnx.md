@@ -33,8 +33,7 @@ compiled for the Hexagon NPU (QNN context binaries) from
 [Qualcomm AI Hub](https://aihub.qualcomm.com/) placed under `models/`.
 
 ```sh
-uv sync --group onnx
-uv pip install onnxruntime-qnn
+uv sync --group onnx    # on ARM64 this also installs the onnxruntime-qnn plugin
 INFERENCE_ENGINE=onnx INFERENCE_DEVICE=qnn uv run python -m inference_server
 ```
 
