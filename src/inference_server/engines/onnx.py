@@ -55,6 +55,7 @@ class OnnxEngine(BaseInferenceEngine):
         self._device = settings.device
         self._runtime: Any | None = None
         self._loaded: dict[str, tuple[Any, Any]] = {}
+        self._qnn_registered = False
 
     @property
     def name(self) -> str:
@@ -82,6 +83,33 @@ class OnnxEngine(BaseInferenceEngine):
                 ) from error
         return self._runtime
 
+    def _register_qnn_provider(self) -> None:
+        """Make the plugin-style `onnxruntime-qnn` (>= 2.0) EP available.
+
+        The QNN execution provider ships as a separate plugin library
+        that must be registered with onnxruntime at runtime; it does
+        not appear in `get_available_providers()` beforehand. Older
+        monolithic builds already contain the provider and skip this.
+        """
+        if self._qnn_registered:
+            return
+        ort = importlib.import_module("onnxruntime")
+        if "QNNExecutionProvider" in ort.get_available_providers():
+            self._qnn_registered = True
+            return
+        try:
+            plugin = importlib.import_module("onnxruntime_qnn")
+        except ImportError as error:
+            raise EngineError(
+                "QNNExecutionProvider is unavailable: install the plugin "
+                "with `uv pip install onnxruntime-qnn`."
+            ) from error
+        ort.register_execution_provider_library(
+            "QNNExecutionProvider",
+            plugin.get_library_path()
+        )
+        self._qnn_registered = True
+
     def _load(self, model_id: str) -> tuple[Any, Any]:
         if model_id not in self._loaded:
             runtime = self._runtime_module()
@@ -89,6 +117,7 @@ class OnnxEngine(BaseInferenceEngine):
             if self._device == "cpu":
                 model = runtime.Model(model_path)
             else:
+                self._register_qnn_provider()
                 config = runtime.Config(model_path)
                 config.clear_providers()
                 config.append_provider(self._device)
