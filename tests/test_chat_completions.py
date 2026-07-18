@@ -13,6 +13,10 @@ from inference_server.schemas.openai import (
     Usage,
     UserMessage,
 )
+from tests.factories import (
+    make_chat_completion_request_payload,
+    make_user_message_payload,
+)
 
 
 def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
@@ -24,20 +28,17 @@ def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
         UserMessage
     ]
 
-    payload = {
-        "model": expected_model,
-        "messages": [
+    payload = make_chat_completion_request_payload(
+        model=expected_model,
+        messages=[
             {
                 "role": "system",
                 "content": "You are a helpful assistant."
             },
-            {
-                "role": "user",
-                "content": "Hi!"
-            }
+            make_user_message_payload()
         ],
-        "temperature": expected_temperature
-    }
+        temperature=expected_temperature
+    )
 
 
     # Act
@@ -53,16 +54,7 @@ def test_chat_completion_request_parses_fields_when_payload_is_valid() -> None:
 
 def test_chat_completion_request_ignores_unknown_fields() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct",
-        "messages": [
-            {
-                "role": "user",
-                "content": "Hi!"
-            }
-        ],
-        "logit_bias": {"50256": -100}
-    }
+    payload = make_chat_completion_request_payload(logit_bias={"50256": -100})
 
 
     # Act
@@ -75,9 +67,8 @@ def test_chat_completion_request_ignores_unknown_fields() -> None:
 
 def test_chat_completion_request_raises_validation_error_when_messages_are_missing() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct"
-    }
+    payload = make_chat_completion_request_payload()
+    del payload["messages"]
 
 
     # Act & Assert
@@ -87,15 +78,9 @@ def test_chat_completion_request_raises_validation_error_when_messages_are_missi
 
 def test_chat_completion_request_raises_validation_error_when_role_is_unknown() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct",
-        "messages": [
-            {
-                "role": "narrator",
-                "content": "Meanwhile, at the server..."
-            }
-        ]
-    }
+    payload = make_chat_completion_request_payload(
+        messages=[make_user_message_payload(role="narrator")]
+    )
 
 
     # Act & Assert
@@ -105,15 +90,9 @@ def test_chat_completion_request_raises_validation_error_when_role_is_unknown() 
 
 def test_chat_completion_request_raises_validation_error_when_content_is_not_a_string() -> None:
     # Arrange
-    payload = {
-        "model": "qwen2.5-0.5b-instruct",
-        "messages": [
-            {
-                "role": "user",
-                "content": 42
-            }
-        ]
-    }
+    payload = make_chat_completion_request_payload(
+        messages=[make_user_message_payload(content=42)]
+    )
 
 
     # Act & Assert
