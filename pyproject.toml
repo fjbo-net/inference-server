@@ -19,7 +19,10 @@ dev = [
     "openai>=2.46.0",
 ]
 onnx = [
-    "onnxruntime-genai>=0.14",
+    "onnxruntime-genai>=0.14 ; platform_machine != 'ARM64'",
+    # 0.14 removed QNN packaging from the genai wheels; until genai can
+    # consume the plugin-style QNN EP, ARM64 needs the QNN-bundled build.
+    "onnxruntime-genai>=0.13,<0.14 ; platform_machine == 'ARM64'",
     "onnxruntime-qnn>=2.0 ; platform_machine == 'ARM64'",
 ]
 

@@ -2,8 +2,10 @@ version = 1
 revision = 3
 requires-python = ">=3.11, <3.13"
 resolution-markers = [
-    "python_full_version >= '3.12'",
-    "python_full_version < '3.12'",
+    "python_full_version >= '3.12' and platform_machine == 'ARM64'",
+    "python_full_version >= '3.12' and platform_machine != 'ARM64'",
+    "python_full_version < '3.12' and platform_machine == 'ARM64'",
+    "python_full_version < '3.12' and platform_machine != 'ARM64'",
 ]
 
 [[package]]
@@ -97,7 +99,7 @@ name = "coloredlogs"
 version = "15.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "humanfriendly" },
+    { name = "humanfriendly", marker = "platform_machine == 'ARM64'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cc/c7/eed8f27100517e8c0e6b923d5f0845d0cb99763da6fdee00478f91db7325/coloredlogs-15.0.1.tar.gz", hash = "sha256:7c991aa71a4577af2f82600d8f8f3a89f936baeaf9b50a9c197da014e5bf16b0", size = 278520, upload-time = "2021-06-11T10:22:45.202Z" }
 wheels = [
@@ -179,7 +181,7 @@ name = "humanfriendly"
 version = "10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pyreadline3", marker = "sys_platform == 'win32'" },
+    { name = "pyreadline3", marker = "platform_machine == 'ARM64' and sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cc/3f/2c29224acb2e2df4d2046e4c73ee2662023c58ff5b113c4c1adac0886c43/humanfriendly-10.0.tar.gz", hash = "sha256:6b0b831ce8f15f7300721aa49829fc4e83921a9a301cc7f606be6686a2288ddc", size = 360702, upload-time = "2021-09-17T21:40:43.31Z" }
 wheels = [
@@ -214,7 +216,8 @@ dev = [
     { name = "ruff" },
 ]
 onnx = [
-    { name = "onnxruntime-genai" },
+    { name = "onnxruntime-genai", version = "0.13.2", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine == 'ARM64'" },
+    { name = "onnxruntime-genai", version = "0.14.1", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'ARM64'" },
     { name = "onnxruntime-qnn", marker = "platform_machine == 'ARM64'" },
 ]
 
@@ -234,7 +237,8 @@ dev = [
     { name = "ruff", specifier = ">=0.9" },
 ]
 onnx = [
-    { name = "onnxruntime-genai", specifier = ">=0.14" },
+    { name = "onnxruntime-genai", marker = "platform_machine != 'ARM64'", specifier = ">=0.14" },
+    { name = "onnxruntime-genai", marker = "platform_machine == 'ARM64'", specifier = ">=0.13,<0.14" },
     { name = "onnxruntime-qnn", marker = "platform_machine == 'ARM64'", specifier = ">=2.0" },
 ]
 
@@ -378,7 +382,8 @@ name = "numpy"
 version = "2.4.6"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.12'",
+    "python_full_version < '3.12' and platform_machine == 'ARM64'",
+    "python_full_version < '3.12' and platform_machine != 'ARM64'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d0/ad/fed0499ce6a338d2a03ebae59cd15093910c8875328855781952abf6c2fe/numpy-2.4.6.tar.gz", hash = "sha256:f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda", size = 20735807, upload-time = "2026-05-18T23:37:14.07Z" }
 wheels = [
@@ -418,7 +423,8 @@ name = "numpy"
 version = "2.5.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.12'",
+    "python_full_version >= '3.12' and platform_machine == 'ARM64'",
+    "python_full_version >= '3.12' and platform_machine != 'ARM64'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/fd/89965aa4ac08c74998539fcbf24fa3540f3e15237fbeb6bcf9c908f4aade/numpy-2.5.1.tar.gz", hash = "sha256:a48a113e6afea91f5608793bafa7ef2ad481fefbda87ec5069f483de61cb9fa3", size = 20755553, upload-time = "2026-07-04T17:08:00.933Z" }
 wheels = [
@@ -461,12 +467,36 @@ wheels = [
 
 [[package]]
 name = "onnxruntime-genai"
+version = "0.13.2"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.12' and platform_machine == 'ARM64'",
+    "python_full_version < '3.12' and platform_machine == 'ARM64'",
+]
+dependencies = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' and platform_machine == 'ARM64'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' and platform_machine == 'ARM64'" },
+    { name = "onnxruntime", marker = "platform_machine == 'ARM64'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/18/14/b49a08f9d48217fb53279212c948107d24c54e6ae40d98320986f4f776fc/onnxruntime_genai-0.13.2-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:c53249f82a4a5050aaf1a5913e7f243746efe359e1c8112ee2480abebd02746d", size = 3694421, upload-time = "2026-05-01T17:29:44.225Z" },
+    { url = "https://files.pythonhosted.org/packages/96/bb/7847203b2d4d2fb6d7b6cdecbd8dd8826e34eae9e8a5b466bc7938f40b1f/onnxruntime_genai-0.13.2-cp311-cp311-win_arm64.whl", hash = "sha256:220eb4094ab5dc6243bfb7967cd84c81dc51dcd37cb52ea15ae07a3637ece50d", size = 2569151, upload-time = "2026-05-01T17:29:51.946Z" },
+    { url = "https://files.pythonhosted.org/packages/84/10/004fc011c19eebe66e8bb33becf1c90c03a978310a9b6f27271541187de9/onnxruntime_genai-0.13.2-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:b2b07932817b6525de8b5251093319e317d24382aee4579684649e46043b7f32", size = 3694883, upload-time = "2026-05-01T17:29:53.527Z" },
+    { url = "https://files.pythonhosted.org/packages/93/ee/f7d592f6015ad833abea00209b0d6421c964d49789f36f89e2281c8c1143/onnxruntime_genai-0.13.2-cp312-cp312-win_arm64.whl", hash = "sha256:e2b56ca7bbeb150d6a0a2b92801a163104dc98597ee6615e4af4c45bc75cce3a", size = 2569211, upload-time = "2026-05-01T17:30:01.142Z" },
+]
+
+[[package]]
+name = "onnxruntime-genai"
 version = "0.14.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.12' and platform_machine != 'ARM64'",
+    "python_full_version < '3.12' and platform_machine != 'ARM64'",
+]
 dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "onnxruntime" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' and platform_machine != 'ARM64'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' and platform_machine != 'ARM64'" },
+    { name = "onnxruntime", marker = "platform_machine != 'ARM64'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/88/4c/d7d6a6c6170d69c75c8ff59e7f8e8b0fafc7fda233af5625a761cf82928f/onnxruntime_genai-0.14.1-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:0a075530fc8b501cfcefc8c2ba13c17dc7ae74580f6369a7d1295ba7c5f6470b", size = 3809272, upload-time = "2026-06-02T20:36:12.256Z" },
@@ -486,14 +516,14 @@ name = "onnxruntime-qnn"
 version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "coloredlogs" },
-    { name = "flatbuffers" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "onnxruntime" },
-    { name = "packaging" },
-    { name = "protobuf" },
-    { name = "sympy" },
+    { name = "coloredlogs", marker = "platform_machine == 'ARM64'" },
+    { name = "flatbuffers", marker = "platform_machine == 'ARM64'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' and platform_machine == 'ARM64'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' and platform_machine == 'ARM64'" },
+    { name = "onnxruntime", marker = "platform_machine == 'ARM64'" },
+    { name = "packaging", marker = "platform_machine == 'ARM64'" },
+    { name = "protobuf", marker = "platform_machine == 'ARM64'" },
+    { name = "sympy", marker = "platform_machine == 'ARM64'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/5a/a5896da7c17f69735acb7b789627a5e5376a50ccc65c1f86eacb0ed26e0e/onnxruntime_qnn-2.4.0-cp311-cp311-manylinux_2_34_aarch64.whl", hash = "sha256:3bdf402cd3d4348aa5798f580fab9832663d10a6e9118339c86b72408f68905e", size = 77689893, upload-time = "2026-07-14T18:55:12.41Z" },
@@ -744,7 +774,7 @@ name = "sympy"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "mpmath" },
+    { name = "mpmath", marker = "platform_machine == 'ARM64'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [
