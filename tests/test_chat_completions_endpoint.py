@@ -1,4 +1,5 @@
 import json
+from collections.abc import AsyncIterator
 from typing import Any
 
 import pytest
@@ -6,10 +7,36 @@ from fastapi.testclient import TestClient
 
 from inference_server.app import create_app
 from inference_server.config import Settings
+from inference_server.engines.base import (
+    BaseInferenceEngine,
+    GenerationChunk,
+)
+from inference_server.schemas.openai import ChatCompletionRequest
 from tests.factories import (
     make_chat_completion_request_payload,
     make_user_message_payload,
 )
+
+
+class FailingEngine(BaseInferenceEngine):
+    """Yields one token, then fails — simulates a mid-stream crash."""
+
+    @property
+    def name(self) -> str:
+        return "failing"
+
+    def list_models(self) -> list[str]:
+        return ["failing"]
+
+    def generate(
+        self,
+        request: ChatCompletionRequest
+    ) -> AsyncIterator[GenerationChunk]:
+        return self._stream()
+
+    async def _stream(self) -> AsyncIterator[GenerationChunk]:
+        yield GenerationChunk(token="partial")
+        yield GenerationChunk(error="QNN execution failed")
 
 
 @pytest.fixture
@@ -19,6 +46,17 @@ def client() -> TestClient:
         engine="echo"
     )
     return TestClient(create_app(settings))
+
+
+@pytest.fixture
+def failing_client() -> TestClient:
+    settings = Settings(
+        _env_file=None,
+        engine="echo"
+    )
+    app = create_app(settings)
+    app.state.engine = FailingEngine()
+    return TestClient(app)
 
 
 def _data_events(sse_body: str) -> list[str]:
@@ -132,6 +170,67 @@ def test_create_chat_completion_returns_error_envelope_when_model_is_unknown(
     assert error["type"] == expected_error_type
     assert error["code"] == expected_error_code
     assert error["param"] == "model"
+
+
+def test_create_chat_completion_returns_error_envelope_when_engine_fails(
+    failing_client: TestClient
+) -> None:
+    # Arrange
+    expected_status_code = 500
+    expected_error_type = "server_error"
+    expected_error_code = "engine_error"
+
+    payload = make_chat_completion_request_payload(model="failing")
+
+
+    # Act
+    response = failing_client.post(
+        "/v1/chat/completions",
+        json=payload
+    )
+
+
+    # Assert
+    error = response.json()["error"]
+    assert response.status_code == expected_status_code
+    assert error["type"] == expected_error_type
+    assert error["code"] == expected_error_code
+    assert "QNN execution failed" in error["message"]
+
+
+def test_create_chat_completion_streams_error_event_when_engine_fails_mid_stream(
+    failing_client: TestClient
+) -> None:
+    # Arrange
+    expected_error_type = "server_error"
+    expected_error_code = "engine_error"
+
+    payload = make_chat_completion_request_payload(
+        model="failing",
+        stream=True
+    )
+
+
+    # Act
+    response = failing_client.post(
+        "/v1/chat/completions",
+        json=payload
+    )
+
+
+    # Assert
+    events = _data_events(response.text)
+    error_events = [
+        json.loads(event)
+        for event in events
+        if event != "[DONE]" and "error" in json.loads(event)
+    ]
+    error = error_events[0]["error"]
+    assert response.status_code == 200
+    assert error["type"] == expected_error_type
+    assert error["code"] == expected_error_code
+    assert "QNN execution failed" in error["message"]
+    assert events[-1] == "[DONE]"
 
 
 def test_create_chat_completion_returns_error_envelope_when_messages_are_missing(

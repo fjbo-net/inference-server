@@ -28,12 +28,16 @@ class GenerationChunk:
     """One step of a token stream.
 
     The final chunk carries `finish_reason` (and `usage` when the
-    engine tracks token counts) with `token` set to None.
+    engine tracks token counts) with `token` set to None. Engines
+    that fail after streaming has started emit a final chunk with
+    `error` set instead of raising, so an in-flight SSE response can
+    report the failure rather than being severed.
     """
 
     token: str | None = None
     finish_reason: FinishReason | None = None
     usage: Usage | None = None
+    error: str | None = None
 
 
 class BaseInferenceEngine(ABC):
