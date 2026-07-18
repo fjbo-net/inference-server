@@ -47,6 +47,24 @@ def test_settings_defaults_engine_to_echo_when_env_is_empty(
     assert settings.engine == expected_engine
 
 
+def test_settings_defaults_device_to_cpu_when_env_is_empty(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path
+) -> None:
+    # Arrange
+    expected_device = "cpu"
+
+    monkeypatch.chdir(tmp_path)
+
+
+    # Act
+    settings = Settings(_env_file=None)
+
+
+    # Assert
+    assert settings.device == expected_device
+
+
 def test_settings_uses_env_values_when_variables_are_set(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path
