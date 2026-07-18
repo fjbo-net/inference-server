@@ -81,15 +81,18 @@ uv sync --group onnx    # installs onnxruntime-genai (CPU runtime included)
 INFERENCE_ENGINE=onnx uv run python -m inference_server
 ```
 
-On Snapdragon (ARM64) devices, swap the bundled CPU runtime for the QNN build
-and select the NPU:
+On Snapdragon (ARM64) devices, add the QNN execution provider plugin and
+select the NPU:
 
 ```sh
 uv sync --group onnx
-uv pip uninstall onnxruntime
-uv pip install onnxruntime-qnn
+uv pip install onnxruntime-qnn    # plugin EP; rides alongside onnxruntime
 INFERENCE_ENGINE=onnx INFERENCE_DEVICE=qnn uv run python -m inference_server
 ```
+
+The server registers the QNN plugin with onnxruntime automatically at model
+load (`onnxruntime-qnn` >= 2.0 is a plugin, so it does not appear in
+`get_available_providers()` until registered — that is expected).
 
 ## Development
 ```sh

@@ -116,12 +116,32 @@ def _make_fake_runtime(
     )
 
 
+FAKE_QNN_LIBRARY_PATH = "C:/fake/onnxruntime_qnn.dll"
+
+
+def _make_fake_ort(available_providers: list[str]) -> SimpleNamespace:
+    registered_libraries: list[tuple[str, str]] = []
+    return SimpleNamespace(
+        get_available_providers=lambda: available_providers,
+        register_execution_provider_library=(
+            lambda name, path: registered_libraries.append(
+                (
+                    name,
+                    path
+                )
+            )
+        ),
+        registered_libraries=registered_libraries
+    )
+
+
 def _make_engine(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     words: list[str],
     device: str = "cpu",
-    fail_after: int | None = None
+    fail_after: int | None = None,
+    available_providers: list[str] | None = None
 ) -> OnnxEngine:
     model_dir = tmp_path / FAKE_MODEL_ID
     model_dir.mkdir(parents=True)
@@ -133,6 +153,20 @@ def _make_engine(
             words,
             fail_after=fail_after
         )
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "onnxruntime",
+        _make_fake_ort(
+            available_providers
+            if available_providers is not None
+            else ["CPUExecutionProvider"]
+        )
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "onnxruntime_qnn",
+        SimpleNamespace(get_library_path=lambda: FAKE_QNN_LIBRARY_PATH)
     )
     settings = Settings(
         _env_file=None,
@@ -272,6 +306,90 @@ def test_onnx_engine_appends_qnn_provider_when_device_is_qnn(
     # Assert
     fake_runtime = sys.modules["onnxruntime_genai"]
     assert fake_runtime.created_configs[0].providers == expected_providers
+
+
+def test_onnx_engine_registers_qnn_plugin_when_device_is_qnn(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Arrange
+    expected_registrations = [
+        (
+            "QNNExecutionProvider",
+            FAKE_QNN_LIBRARY_PATH
+        )
+    ]
+
+    engine = _make_engine(
+        tmp_path,
+        monkeypatch,
+        words=["hi"],
+        device="qnn"
+    )
+    request = make_chat_completion_request(model=FAKE_MODEL_ID)
+
+
+    # Act
+    _collect_chunks(engine.generate(request))
+
+
+    # Assert
+    fake_ort = sys.modules["onnxruntime"]
+    assert fake_ort.registered_libraries == expected_registrations
+
+
+def test_onnx_engine_skips_plugin_registration_when_provider_is_built_in(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Arrange
+    engine = _make_engine(
+        tmp_path,
+        monkeypatch,
+        words=["hi"],
+        device="qnn",
+        available_providers=["QNNExecutionProvider"]
+    )
+    request = make_chat_completion_request(model=FAKE_MODEL_ID)
+
+
+    # Act
+    _collect_chunks(engine.generate(request))
+
+
+    # Assert
+    fake_ort = sys.modules["onnxruntime"]
+    assert fake_ort.registered_libraries == []
+
+
+def test_onnx_engine_emits_error_chunk_when_qnn_plugin_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Arrange
+    expected_error_fragment = "QNNExecutionProvider is unavailable"
+
+    engine = _make_engine(
+        tmp_path,
+        monkeypatch,
+        words=["hi"],
+        device="qnn"
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "onnxruntime_qnn",
+        None
+    )
+    request = make_chat_completion_request(model=FAKE_MODEL_ID)
+
+
+    # Act
+    chunks = _collect_chunks(engine.generate(request))
+
+
+    # Assert
+    assert chunks[-1].error is not None
+    assert expected_error_fragment in chunks[-1].error
 
 
 def test_onnx_engine_raises_value_error_when_device_is_unknown(
