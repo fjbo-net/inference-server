@@ -29,6 +29,29 @@ curl http://127.0.0.1:8000/v1/chat/completions \
   -d '{"model": "echo", "messages": [{"role": "user", "content": "Hi!"}]}'
 ```
 
+On Windows (`cmd.exe` or PowerShell), single quotes are not JSON-safe — escape the
+inner double quotes instead (use `curl.exe` in PowerShell):
+
+```bat
+curl http://127.0.0.1:8000/v1/chat/completions -H "Content-Type: application/json" -d "{\"model\": \"echo\", \"messages\": [{\"role\": \"user\", \"content\": \"Hi!\"}]}"
+```
+
+Or use the `openai` SDK directly:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://127.0.0.1:8000/v1",
+    api_key="unused"
+)
+completion = client.chat.completions.create(
+    model="echo",
+    messages=[{"role": "user", "content": "Hi!"}]
+)
+print(completion.choices[0].message.content)
+```
+
 Errors use the OpenAI envelope (`{"error": {"message", "type", "param", "code"}}`).
 
 ## Configuration
