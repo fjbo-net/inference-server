@@ -34,14 +34,19 @@ compiled for the Hexagon NPU (QNN context binaries) from
 
 ```sh
 uv sync --group onnx
-uv pip uninstall onnxruntime
 uv pip install onnxruntime-qnn
 INFERENCE_ENGINE=onnx INFERENCE_DEVICE=qnn uv run python -m inference_server
 ```
 
-The `onnxruntime`/`onnxruntime-qnn` swap is required because both ship the
-same `onnxruntime` Python module; installing both corrupts the environment.
-Re-run the swap after any `uv sync`.
+`onnxruntime-qnn` >= 2.0 is a plugin execution provider: it installs
+*alongside* the standard `onnxruntime` package (which stays), and the QNN
+provider does not appear in `onnxruntime.get_available_providers()` until it
+is registered at runtime — the server does that automatically when
+`INFERENCE_DEVICE=qnn`. To sanity-check the plugin install by hand:
+
+```sh
+uv run python -c "import onnxruntime as ort, onnxruntime_qnn; ort.register_execution_provider_library('QNNExecutionProvider', onnxruntime_qnn.get_library_path()); print('plugin OK')"
+```
 
 ## 3. SDK check (both passes)
 
@@ -83,5 +88,15 @@ Task Manager should show NPU utilization during generation.
   `genai_config.json` or `INFERENCE_MODELS_DIR` points elsewhere.
 - `{"error": {..., "code": "engine_error"}}` mentioning `onnxruntime-genai is
   not installed` — the `onnx` dependency group is missing.
+- `engine_error` mentioning `QNNExecutionProvider is unavailable` — the
+  `onnxruntime-qnn` plugin is not installed on this device.
+- `engine_error` with `JSON Error: model:decoder: Unknown value
+  "sliding_window_key_value_cache"` — the model's `genai_config.json` uses a
+  pre-mainline schema name; rename that key to `sliding_window` (same
+  sub-keys) and retry. Cascading unknown-key errors mean the assets need a
+  newer/nightly `onnxruntime-genai`, or use a differently packaged model
+  (e.g. `llmware/llama-3.2-3b-onnx-qnn`).
+- NPU-format models (QNN context binaries) only run on Snapdragon hardware —
+  on x86 dev machines use a CPU-format model (section 1).
 - SSE stream ends with `data: {"error": ...}` before `[DONE]` — the runtime
   failed mid-generation; the message carries the underlying cause.
