@@ -18,6 +18,9 @@ dev = [
     "mypy>=1.14",
     "openai>=2.46.0",
 ]
+onnx = [
+    "onnxruntime-genai>=0.14",
+]
 
 [build-system]
 requires = ["hatchling"]
